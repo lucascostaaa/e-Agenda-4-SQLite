@@ -116,9 +116,10 @@ namespace eAgenda.Tests.CompromissoModule
             var compromisso = new Compromisso("Projeto", "Uniplac", "", DateTime.Now.Date, new TimeSpan(18, 00, 00), new TimeSpan(19, 00, 00), null);
             controlador.InserirNovo(compromisso);
 
-            var novocompromisso = new Compromisso("Reuniao", "Uniplac", "", DateTime.Now.Date, new TimeSpan(18, 00, 00), new TimeSpan(19, 00, 00), null);
+            var novocompromisso = new Compromisso("Reuniao", "Uniplac", "", DateTime.Now.Date, new TimeSpan(20, 00, 00), new TimeSpan(21, 00, 00), null);
             controlador.Editar(compromisso.Id, novocompromisso);
 
+            novocompromisso.Id = compromisso.Id;
             Compromisso compromissoAtualizado = controlador.SelecionarPorId(compromisso.Id);
             compromissoAtualizado.Should().Be(novocompromisso);
         }
@@ -131,7 +132,7 @@ namespace eAgenda.Tests.CompromissoModule
             var compromisso = new Compromisso("Projeto", "Uniplac", "", DateTime.Now.Date, new TimeSpan(18, 00, 00), new TimeSpan(19, 00, 00), null);
             controlador.InserirNovo(compromisso);
 
-            var novocompromisso = new Compromisso("Reuniao", "Uniplac", "", DateTime.Now.Date, new TimeSpan(18, 00, 00), new TimeSpan(19, 00, 00), contato);
+            var novocompromisso = new Compromisso("Reuniao", "Uniplac", "", DateTime.Now.Date, new TimeSpan(20, 00, 00), new TimeSpan(21, 00, 00), contato);
             controlador.Editar(compromisso.Id, novocompromisso);
 
             Compromisso compromissoAtualizado = controlador.SelecionarPorId(compromisso.Id);
@@ -146,13 +147,12 @@ namespace eAgenda.Tests.CompromissoModule
             var compromisso = new Compromisso("Projeto", "Uniplac", "", DateTime.Now.Date, new TimeSpan(18, 00, 00), new TimeSpan(19, 00, 00), contato);
             controlador.InserirNovo(compromisso);
 
-            var novocompromisso = new Compromisso("Reuniao", "Uniplac", "", DateTime.Now.Date, new TimeSpan(18, 00, 00), new TimeSpan(19, 00, 00), null);
+            var novocompromisso = new Compromisso("Reuniao", "Uniplac", "", DateTime.Now.Date, new TimeSpan(20, 00, 00), new TimeSpan(21, 00, 00), null);
             controlador.Editar(compromisso.Id, novocompromisso);
 
             Compromisso compromissoAtualizado = controlador.SelecionarPorId(compromisso.Id);
             compromissoAtualizado.Should().Be(novocompromisso);
         }
-
         [TestMethod]
         public void NaoDeveAtualizar_Com_Compromisso_No_Mesmo_Horario()
         {
@@ -165,7 +165,6 @@ namespace eAgenda.Tests.CompromissoModule
             var selecionartodos = controlador.SelecionarTodos();
             selecionartodos[0].Assunto.Should().Be("Projeto");
         }
-
         [TestMethod]
         public void DeveExcluir_Compromissos()
         {

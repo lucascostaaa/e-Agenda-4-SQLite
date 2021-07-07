@@ -105,14 +105,14 @@ namespace eAgenda.Controladores.Shared
 
                 var list = new List<T>();
 
-                var reader = command.ExecuteReader();
-
-                while (reader.Read())
+                using (var reader = command.ExecuteReader())
                 {
-                    var obj = convert(reader);
-                    list.Add(obj);
+                    while (reader.Read())
+                    {
+                        var obj = convert(reader);
+                        list.Add(obj);
+                    }
                 }
-
                 connection.Close();
                 return list;
             }
@@ -128,18 +128,17 @@ namespace eAgenda.Controladores.Shared
 
                 var list = new List<T>();
 
-                var reader = command.ExecuteReader();
-
-                while (reader.Read())
+                using (var reader = command.ExecuteReader())
                 {
-                    var obj = convert(reader);
-                    list.Add(obj);
+                    while (reader.Read())
+                    {
+                        var obj = convert(reader);
+                        list.Add(obj);
+                    }
                 }
-
                 connection.Close();
                 return list;
             }
-
         }
         public static T Get<T>(string sql, ConverterDelegate<T> convert, Dictionary<string, object> parameters)
         {
@@ -155,17 +154,13 @@ namespace eAgenda.Controladores.Shared
 
                 T t = default;
 
-                var reader = command.ExecuteReader();
-
-                if (reader.Read())
-                    t = default(T);
-                else
+                using (var reader = command.ExecuteReader())
                 {
-                    reader.Read();
-                    t = convert(reader);
+                    if (reader.Read())
+                        t = convert(reader);
                 }
                 connection.Close();
-                return t;
+                return t;   
             }
             else
             {
@@ -179,7 +174,7 @@ namespace eAgenda.Controladores.Shared
 
                 T t = default;
 
-                var reader = command.ExecuteReader();
+                using (var reader = command.ExecuteReader())
 
                 if (reader.Read())
                     t = convert(reader);
@@ -223,6 +218,7 @@ namespace eAgenda.Controladores.Shared
                 return numberRows > 0;
             }
         }
+        #region Metodos Privados
         private static void SetParameters(this SqlCommand command, Dictionary<string, object> parameters)
         {
             if (parameters == null || parameters.Count == 0)
@@ -267,5 +263,6 @@ namespace eAgenda.Controladores.Shared
                     value == null;
         }
 
+        #endregion
     }
 }
