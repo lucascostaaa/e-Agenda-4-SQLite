@@ -98,10 +98,10 @@ namespace eAgenda.Tests.CompromissoModule
         [TestMethod]
         public void DeveSelecionar_CompromissosFuturos()
         {
-            var compromisso = new Compromisso("Projeto", "Uniplac", null, new DateTime(2021,07,06), new TimeSpan(13, 00, 00), new TimeSpan(14, 00, 00), null);
+            var compromisso = new Compromisso("Projeto", "Uniplac", null, new DateTime(2021,10,01), new TimeSpan(13, 00, 00), new TimeSpan(14, 00, 00), null);
             controlador.InserirNovo(compromisso);
 
-            var compromissos = controlador.SelecionarCompromissosFuturos(DateTime.Now.Date, new DateTime(2021,08,02));
+            var compromissos = controlador.SelecionarCompromissosFuturos(DateTime.Now.Date, new DateTime(2022,08,02));
 
             compromissos.Should().HaveCount(1);
         }
