@@ -21,6 +21,7 @@ namespace eAgenda.Tests.ContatoModule
             Db.Update("DELETE FROM [TBCONTATO]");
         }
 
+        #region Teste de Insert
         [TestMethod]
         public void DeveInserir_Contato()
         {
@@ -34,39 +35,9 @@ namespace eAgenda.Tests.ContatoModule
             var contatoEncontrado = controlador.SelecionarPorId(novoContato.Id);
             contatoEncontrado.Should().Be(novoContato);
         }
+        #endregion
 
-        [TestMethod]
-        public void DeveAtualizar_Contato()
-        {
-            //arrange
-            var contato = new Contato("José Pedro", "jose.pedro@gmail.com", "321654987", "JP Ltda", "Dev");
-            controlador.InserirNovo(contato);
-
-            var novoContato = new Contato("Arnaldo Antunes", "arnaldo@gmail.com", "987654321", "Arn Ltda", "Musico");
-
-            //action
-            controlador.Editar(contato.Id, novoContato);
-
-            //assert
-            Contato contatoAtualizado = controlador.SelecionarPorId(contato.Id);
-            contatoAtualizado.Should().Be(novoContato);
-        }
-
-        [TestMethod]
-        public void DeveExcluir_Contato()
-        {
-            //arrange            
-            var contato = new Contato("José Pedro", "jose.pedro@gmail.com", "321654987", "JP Ltda", "Dev");
-            controlador.InserirNovo(contato);
-
-            //action            
-            controlador.Excluir(contato.Id);
-
-            //assert
-            Contato contatoEncontrado = controlador.SelecionarPorId(contato.Id);
-            contatoEncontrado.Should().BeNull();
-        }
-
+        #region Teste Visualizar
         [TestMethod]
         public void DeveSelecionar_Contato_PorId()
         {
@@ -80,7 +51,6 @@ namespace eAgenda.Tests.ContatoModule
             //assert
             contatoEncontrado.Should().NotBeNull();
         }
-
         [TestMethod]
         public void DeveSelecionar_TodosContatos()
         {
@@ -103,7 +73,6 @@ namespace eAgenda.Tests.ContatoModule
             contatos[1].Nome.Should().Be("Arnaldo Antuenes");
             contatos[2].Nome.Should().Be("Roberto Carlos");
         }
-
         [TestMethod]
         public void DeveSelecionar_ContatosAgrupados_PorCargo()
         {
@@ -134,6 +103,43 @@ namespace eAgenda.Tests.ContatoModule
 
             contatosAgrupados[1].Campo.Should().Be("Musico");
             contatosAgrupados[1].Contatos.Should().HaveCount(2);
-        }       
+        }
+        #endregion
+
+        #region Teste Update
+        [TestMethod]
+        public void DeveAtualizar_Contato()
+        {
+            //arrange
+            var contato = new Contato("José Pedro", "jose.pedro@gmail.com", "321654987", "JP Ltda", "Dev");
+            controlador.InserirNovo(contato);
+
+            var novoContato = new Contato("Arnaldo Antunes", "arnaldo@gmail.com", "987654321", "Arn Ltda", "Musico");
+
+            //action
+            controlador.Editar(contato.Id, novoContato);
+
+            //assert
+            Contato contatoAtualizado = controlador.SelecionarPorId(contato.Id);
+            contatoAtualizado.Should().Be(novoContato);
+        }
+        #endregion
+
+        #region Testes de Delete
+        [TestMethod]
+        public void DeveExcluir_Contato()
+        {
+            //arrange            
+            var contato = new Contato("José Pedro", "jose.pedro@gmail.com", "321654987", "JP Ltda", "Dev");
+            controlador.InserirNovo(contato);
+
+            //action            
+            controlador.Excluir(contato.Id);
+
+            //assert
+            Contato contatoEncontrado = controlador.SelecionarPorId(contato.Id);
+            contatoEncontrado.Should().BeNull();
+        }
+        #endregion
     }
 }

@@ -218,6 +218,7 @@ namespace eAgenda.Controladores.Shared
                 return numberRows > 0;
             }
         }
+
         #region Metodos Privados
         private static void SetParameters(this SqlCommand command, Dictionary<string, object> parameters)
         {

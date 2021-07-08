@@ -27,6 +27,7 @@ namespace eAgenda.Tests.CompromissoModule
             Db.Update("DELETE FROM [TBCONTATO]");
         }
 
+        #region Testes de Insert
         [TestMethod]
         public void DeveInserir_Compromisso()
         {
@@ -63,6 +64,10 @@ namespace eAgenda.Tests.CompromissoModule
 
             compromissos.Should().HaveCount(1);
         }
+
+        #endregion
+
+        #region Testes de Visualizar
         [TestMethod]
         public void DeveSelecionar_TodosCompromissos()
         {
@@ -110,6 +115,9 @@ namespace eAgenda.Tests.CompromissoModule
 
             compromissos.Should().HaveCount(1);
         }
+        #endregion
+
+        #region Testes de Updates
         [TestMethod]
         public void DeveAtualiazar_Compromisso()
         {
@@ -165,6 +173,10 @@ namespace eAgenda.Tests.CompromissoModule
             var selecionartodos = controlador.SelecionarTodos();
             selecionartodos[0].Assunto.Should().Be("Projeto");
         }
+
+        #endregion
+
+        #region Testes de Delete 
         [TestMethod]
         public void DeveExcluir_Compromissos()
         {
@@ -179,6 +191,6 @@ namespace eAgenda.Tests.CompromissoModule
             Compromisso compromissoEncontrado = controlador.SelecionarPorId(novocompromisso.Id);
             compromissoEncontrado.Should().BeNull();
         }
-
+        #endregion
     }
 }
