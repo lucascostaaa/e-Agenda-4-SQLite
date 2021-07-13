@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Configuration;
-using System.Data.SQLite;
+using System.Data.Common;
 
 namespace eAgenda.Controladores.Shared
 {
@@ -13,79 +12,45 @@ namespace eAgenda.Controladores.Shared
     {
         private static readonly string banco = "";
         private static readonly string connectionString = "";
+        private static readonly DbProviderFactory factory;
 
         static Db()
         {
             banco = ConfigurationManager.AppSettings["selecionarbanco"].ToLower().Trim();
             connectionString = ConfigurationManager.ConnectionStrings[banco].ConnectionString;
+            string providerName = ConfigurationManager.ConnectionStrings[banco].ProviderName;
+            factory = DbProviderFactories.GetFactory(providerName);
         }
         public static int Insert(string sql, Dictionary<string, object> parameters)
         {
-            if (banco == "sqlite")
+            using (IDbConnection connection = factory.CreateConnection())
             {
-                SQLiteConnection connection = new SQLiteConnection(connectionString);
-
-                SQLiteCommand command = new SQLiteCommand(sql.AppendSelectLastInsertRowID(), connection);
-
-                command.SetParametersSqlite(parameters);
-
-                connection.Open();
-
-                int id = Convert.ToInt32(command.ExecuteScalar());
-
-                connection.Close();
-
-                return id;
+                connection.ConnectionString = connectionString;
+                using(IDbCommand command = factory.CreateCommand())
+                {
+                    command.CommandText = sql.AppendSelectLastInsertRowIdOrScope_identity();
+                    command.Connection = connection;
+                    command.SetParameters(parameters);
+                    connection.Open();
+                    int id = Convert.ToInt32(command.ExecuteScalar());
+                    return id;
+                }
             }
-            else
-            {
-                SqlConnection connection = new SqlConnection(connectionString);
-
-                SqlCommand command = new SqlCommand(sql.AppendSelectIdentity(), connection);
-
-                command.SetParameters(parameters);
-
-                connection.Open();
-
-                int id = Convert.ToInt32(command.ExecuteScalar());
-
-                connection.Close();
-
-                return id;
-            }
-
         }
         public static void Update(string sql, Dictionary<string, object> parameters = null)
         {
-            if(banco == "sqlite")
+            using (IDbConnection connection = factory.CreateConnection())
             {
-                SQLiteConnection connection = new SQLiteConnection(connectionString);
-
-                SQLiteCommand command = new SQLiteCommand(sql, connection);
-
-                command.SetParametersSqlite(parameters);
-
-                connection.Open();
-
-                command.ExecuteNonQuery();
-
-                connection.Close();
+                connection.ConnectionString = connectionString;
+                using (IDbCommand command = factory.CreateCommand())
+                {
+                    command.CommandText = sql;
+                    command.Connection = connection;
+                    command.SetParameters(parameters);
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
             }
-            else
-            {
-                SqlConnection connection = new SqlConnection(connectionString);
-
-                SqlCommand command = new SqlCommand(sql, connection);
-
-                command.SetParameters(parameters);
-
-                connection.Open();
-
-                command.ExecuteNonQuery();
-
-                connection.Close();
-            }
-
         }
         public static void Delete(string sql, Dictionary<string, object> parameters)
         {
@@ -93,177 +58,94 @@ namespace eAgenda.Controladores.Shared
         }
         public static List<T> GetAll<T>(string sql, ConverterDelegate<T> convert, Dictionary<string, object> parameters = null)
         {
-            if(banco == "sqlite")
+            using (IDbConnection connection = factory.CreateConnection())
             {
-                SQLiteConnection connection = new SQLiteConnection(connectionString);
-
-                SQLiteCommand command = new SQLiteCommand(sql, connection);
-
-                command.SetParametersSqlite(parameters);
-
-                connection.Open();
-
-                var list = new List<T>();
-
-                using (var reader = command.ExecuteReader())
+                connection.ConnectionString = connectionString;
+                using (IDbCommand command = factory.CreateCommand())
                 {
-                    while (reader.Read())
+                    command.CommandText = sql.AppendSelectLastInsertRowIdOrScope_identity();
+                    command.Connection = connection;
+                    command.SetParameters(parameters);
+                    connection.Open();
+
+                    var list = new List<T>();
+
+                    using (var reader = command.ExecuteReader())
                     {
-                        var obj = convert(reader);
-                        list.Add(obj);
+                        while (reader.Read())
+                        {
+                            var obj = convert(reader);
+                            list.Add(obj);
+                        }
                     }
+                    return list;
                 }
-                connection.Close();
-                return list;
-            }
-            else
-            {
-                SqlConnection connection = new SqlConnection(connectionString);
-
-                SqlCommand command = new SqlCommand(sql, connection);
-
-                command.SetParameters(parameters);
-
-                connection.Open();
-
-                var list = new List<T>();
-
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        var obj = convert(reader);
-                        list.Add(obj);
-                    }
-                }
-                connection.Close();
-                return list;
-            }
+            }  
         }
         public static T Get<T>(string sql, ConverterDelegate<T> convert, Dictionary<string, object> parameters)
         {
-            if(banco == "sqlite")
+            using (IDbConnection connection = factory.CreateConnection())
             {
-                SQLiteConnection connection = new SQLiteConnection(connectionString);
-
-                SQLiteCommand command = new SQLiteCommand(sql, connection);
-
-                command.SetParametersSqlite(parameters);
-
-                connection.Open();
-
-                T t = default;
-
-                using (var reader = command.ExecuteReader())
+                connection.ConnectionString = connectionString;
+                using (IDbCommand command = factory.CreateCommand())
                 {
-                    if (reader.Read())
-                        t = convert(reader);
+                    command.CommandText = sql;
+                    command.Connection = connection;
+                    command.SetParameters(parameters);
+                    connection.Open();
+                    T t = default;
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                            t = convert(reader);
+                    }
+                    return t;
                 }
-                connection.Close();
-                return t;   
-            }
-            else
-            {
-                SqlConnection connection = new SqlConnection(connectionString);
-
-                SqlCommand command = new SqlCommand(sql, connection);
-
-                command.SetParameters(parameters);
-
-                connection.Open();
-
-                T t = default;
-
-                using (var reader = command.ExecuteReader())
-
-                if (reader.Read())
-                    t = convert(reader);
-
-                connection.Close();
-                return t;
-            }
+            } 
         }
         public static bool Exists(string sql, Dictionary<string, object> parameters)
         {
+            using (IDbConnection connection = factory.CreateConnection())
+            {
+                connection.ConnectionString = connectionString;
+                using (IDbCommand command = factory.CreateCommand())
+                {
+                    command.CommandText = sql;
+                    command.Connection = connection;
+                    command.SetParameters(parameters);
+                    connection.Open();
+
+                    int numberRows = Convert.ToInt32(command.ExecuteScalar());
+                    return numberRows > 0;
+                }
+            }
+        }
+        private static void SetParameters(this IDbCommand command, Dictionary<string, object> parameters)
+        {
+            if (parameters == null || parameters.Count == 0)
+                return;
+            foreach (var parameter in parameters)
+            {
+                string name = parameter.Key;
+                object value = parameter.Value.IsNullOrEmpty() ? DBNull.Value : parameter.Value;
+                IDataParameter dbParameter = command.CreateParameter();
+                dbParameter.ParameterName = name;
+                dbParameter.Value = value;
+                command.Parameters.Add(dbParameter);
+            }
+        }
+        private static string AppendSelectLastInsertRowIdOrScope_identity(this string sql)
+        {
             if (banco == "sqlite")
-            {
-                SQLiteConnection connection = new SQLiteConnection(connectionString);
-
-                SQLiteCommand command = new SQLiteCommand(sql, connection);
-
-                command.SetParametersSqlite(parameters);
-
-                connection.Open();
-
-                int numberRows = Convert.ToInt32(command.ExecuteScalar());
-
-                connection.Close();
-
-                return numberRows > 0;
-            }
+                return sql + ";SELECT last_insert_rowid()";
             else
-            {
-                SqlConnection connection = new SqlConnection(connectionString);
-
-                SqlCommand command = new SqlCommand(sql, connection);
-
-                command.SetParameters(parameters);
-
-                connection.Open();
-
-                int numberRows = Convert.ToInt32(command.ExecuteScalar());
-
-                connection.Close();
-
-                return numberRows > 0;
-            }
-        }
-
-        #region Metodos Privados
-        private static void SetParameters(this SqlCommand command, Dictionary<string, object> parameters)
-        {
-            if (parameters == null || parameters.Count == 0)
-                return;
-
-            foreach (var parameter in parameters)
-            {
-                string name = parameter.Key;
-
-                object value = parameter.Value.IsNullOrEmpty() ? DBNull.Value : parameter.Value;
-
-                SqlParameter dbParameter = new SqlParameter(name, value);
-
-                command.Parameters.Add(dbParameter);
-            }
-        }
-        private static void SetParametersSqlite(this SQLiteCommand command, Dictionary<string, object> parameters)
-        {
-            if (parameters == null || parameters.Count == 0)
-            {
-                return;
-            }
-            foreach (var parameter in parameters)
-            {
-                string name = parameter.Key;
-                object value = parameter.Value.IsNullOrEmpty() ? DBNull.Value : parameter.Value;
-                SQLiteParameter dbParameter = new SQLiteParameter(name, value);
-                command.Parameters.Add(dbParameter);
-            }
-        }
-        private static string AppendSelectIdentity(this string sql)
-        {
-            return sql + ";SELECT SCOPE_IDENTITY()";
-        }
-        private static string AppendSelectLastInsertRowID(this string sql)
-        {
-            return sql + ";SELECT  last_Insert_rowid()";
+                return sql + ";SELECT SCOPE_IDENTITY()";
         }
         public static bool IsNullOrEmpty(this object value)
         {
-            return (value is string && string.IsNullOrEmpty((string)value)) ||
+            return (value is string @string && string.IsNullOrEmpty(@string)) ||
                     value == null;
         }
 
-        #endregion
     }
 }

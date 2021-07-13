@@ -62,7 +62,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CompromissoModule\ControladorCompromisso.cs" />
-    <Compile Include="Shared\DbSQLite.cs" />
     <Compile Include="Shared\Controlador.cs" />
     <Compile Include="ContatoModule\ControladorContato.cs" />
     <Compile Include="TarefaModule\ControladorTarefa.cs" />
